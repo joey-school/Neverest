@@ -1,0 +1,47 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    padding-top: 20px;
+    overflow: hidden;
+    text-align: center;
+}
+
+canvas {
+    border: 1px solid;
+}
+
+ball {
+    background-image: url("../images/ball.png");
+    width: 100px; height: 100px;
+    position: absolute;
+}
+basketball {
+    background-image: url("../images/basketball.png");
+    width: 100px; height: 100px;
+    position: absolute;
+}
+
+earth {
+    background-image: url("../images/space.jpg");
+    width: 300px; height: 500px;
+    display: block;
+}
+
+.moon {
+    background-image: url("../images/moon.jpg");
+}
+
+.space {
+    background-image: url("../images/space.jpg");
+}
+
+.row {
+    display: flex;
+    height: 100vh;
+}
+
+.column {
+    flex: 50%;
+}
