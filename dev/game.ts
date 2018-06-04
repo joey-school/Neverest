@@ -6,13 +6,17 @@ class Game {
         this.player = new Player();
         this.scene = new Scene();
 
-        this.gameLoop();
+        // this.gameLoop();
+        Matter.Events.on(MatterManager.getInstance().engine, "beforeUpdate", this.gameLoop.bind(this));
+        createjs.Ticker.framerate = 60;
     }
 
     gameLoop() {
         
         this.player.update();
 
-        requestAnimationFrame(() => this.gameLoop())
+        // Matter.Render.lookAt(MatterManager.getInstance().render, this.player.body);
+
+        // requestAnimationFrame(() => this.gameLoop())
     }
 }

@@ -7,12 +7,11 @@ var Game = (function () {
     function Game() {
         this.player = new Player();
         this.scene = new Scene();
-        this.gameLoop();
+        Matter.Events.on(MatterManager.getInstance().engine, "beforeUpdate", this.gameLoop.bind(this));
+        createjs.Ticker.framerate = 60;
     }
     Game.prototype.gameLoop = function () {
-        var _this = this;
         this.player.update();
-        requestAnimationFrame(function () { return _this.gameLoop(); });
     };
     return Game;
 }());
@@ -29,7 +28,8 @@ var MatterManager = (function () {
                 width: 800,
                 height: 600,
                 wireframes: false,
-                background: "#ffffff"
+                background: "#ffffff",
+                hasBounds: true
             }
         });
         Matter.Render.run(this.render);
@@ -51,9 +51,18 @@ var Player = (function () {
         this.impulsePositionX = 4;
         this.maxAmountOfConsecutiveJumps = 2;
         this.jumpCounter = 0;
-        this.body = Matter.Bodies.rectangle(500, 200, 30, 30, { render: {
-                fillStyle: "#000"
-            } });
+        this.isChargingJump = false;
+        this.scaleX = 1;
+        this.scaleY = 1;
+        this.body = Matter.Bodies.rectangle(500, 200, 27, 27, {
+            render: {
+                sprite: {
+                    texture: './images/player.png',
+                    xScale: 1,
+                    yScale: 1
+                }
+            }
+        });
         Matter.World.add(MatterManager.getInstance().engine.world, this.body);
         Matter.Events.on(MatterManager.getInstance().engine, 'collisionStart', function (e) {
             _this.handleCollision(e);
@@ -69,15 +78,42 @@ var Player = (function () {
                     _this.jump(_this.impulseForceX, -_this.impulsePositionX);
                 }
             }
+            switch (e.keyCode) {
+                case 38:
+                    if (!_this.isChargingJump) {
+                        _this.isChargingJump = true;
+                        createjs.Tween.get(_this).to({ scaleX: 1.5 }, 150, createjs.Ease.sineOut);
+                        createjs.Tween.get(_this).to({ scaleY: 0.75 }, 100, createjs.Ease.sineOut);
+                    }
+                    break;
+            }
+        });
+        document.addEventListener("keyup", function (e) {
+            switch (e.keyCode) {
+                case 38:
+                    if (_this.isChargingJump) {
+                        _this.isChargingJump = false;
+                        createjs.Tween.get(_this).to({ scaleX: 1 }, 300, createjs.Ease.getBackOut(5));
+                        createjs.Tween.get(_this).to({ scaleY: 1 }, 300, createjs.Ease.getBackOut(5));
+                        _this.jumpUp(-0.03);
+                    }
+                    break;
+            }
         });
     }
     Player.prototype.update = function () {
         this.capVelocity();
+        this.body.render.sprite.xScale = this.scaleX;
+        this.body.render.sprite.yScale = this.scaleY;
+        this.body.render.sprite.yOffset = (1 - (1 - this.scaleY)) / 2;
     };
     Player.prototype.jump = function (impulseForceX, impulsePositionX) {
         this.zeroVelocityY();
         Matter.Body.applyForce(this.body, { x: this.body.position.x + impulsePositionX, y: this.body.position.y }, { x: impulseForceX, y: -this.impulseForceY });
         this.jumpCounter++;
+    };
+    Player.prototype.jumpUp = function (impulseForceY) {
+        Matter.Body.applyForce(this.body, { x: this.body.position.x, y: this.body.position.y }, { x: 0, y: impulseForceY });
     };
     Player.prototype.handleCollision = function (e) {
         if (e.pairs[0].collision.normal.y < 0) {

@@ -21,9 +21,12 @@ class MatterManager {
                 width: 800,
                 height: 600,
                 wireframes: false,
-                background: "#ffffff"
+                background: "#ffffff",
+                hasBounds: true
             }
         });
+
+        // Matter.Render.setPixelRatio(this.render, 1)
 
         Matter.Render.run(this.render);
     }
